@@ -1,0 +1,8 @@
+*.sql
+Main.py
+import_properties.py
+*.properties
+*.ipynb
+.vscode*
+Output*
+__*
