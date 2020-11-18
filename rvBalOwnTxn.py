@@ -1,25 +1,9 @@
 c_query="""
           select 
                 COUNT(*)
-                FROM rvBalOwnTxn bal
-                INNER JOIN rvTxnDtl dtl ON bal.OwnTxnDtlTID = dtl.TxnDtlTID
-                INNER JOIN rvTxnHdr hdr ON dtl.TxnHdrTID = hdr.TxnHdrTID
-                INNER JOIN rvTxnChkHdr chk ON hdr.TxnChkTID = chk.TxnChkTID
-                INNER JOIN aaMasBatch b ON chk.TxnBatchTID = b.BatchTID
-                INNER JOIN aaTblIntType tpe ON bal.OwnIntCode = tpe.IntTypeCode
-                INNER JOIN fbMasHdr own ON bal.OwnHID = own.HdrHID
-                INNER JOIN fbMasHdr corp ON bal.OwnCorpHID = corp.HdrHID
-                INNER JOIN aaMasAddress addr ON bal.OwnAddrTID = addr.AddrTID
-                INNER JOIN aaMasOwn oattr ON bal.OwnHID = oattr.OwnHID
-                INNER JOIN fbMasHdr prop ON bal.OwnPropHID = prop.HdrHID
-                INNER JOIN fbMasHdr purch ON chk.TxnPurchHID = purch.HdrHID
-                left join ##temp_soldwells AS sw ON sw.HdrHID=PROP.HdrHID 
-                WHERE bal.OwnPmtStatCode NOT IN ('Xfer')
-                AND b.BatchPosted = 1
-                and bal.OwnProdDate between '2017-01-01 00:00:00' and '2017-01-31 00:00:00' 
-                and sw.HdrHID is null
-                AND DTL.TxnReversed =0 
-                AND dtl.TxnReversal=0 
+                FROM tempdb..camilo_query
+                WHERE OwnProdDate between '2017-01-01 00:00:00' and '2017-12-31 00:00:00'   
+                
                      
                                 
         """
@@ -31,40 +15,26 @@ corp_query="""
             """
 
 query="""
-             select 
+             select
                  OwnTxnTID
-                ,TRIM(prop.HdrCode) as PropCode
-                ,TRIM(purch.HdrCode) as PurchCode
-                ,TRIM(TxnProdCode) AS TxnProdCode
+                , PropCode
+                ,PurchCode
+                ,TxnProdCode
                 ,OwnProdDate
-                ,TRIM(own.HdrCode) as OwnCode
-                ,TRIM(SysIntCode) AS SysIntCode
-                ,TRIM(OwnIntCode) AS OwnIntCode
-                ,cast (OwnDeckDcml as varchar) OwnDeckDcml
+                ,OwnCode
+                ,SysIntCode
+                , OwnIntCode
+                ,OwnDeckDcml
                 ,OwnChkVol
                 ,OwnMmbtu
                 ,OwnVal
-                ,OwnNet
-                FROM rvBalOwnTxn bal                
-                INNER JOIN rvTxnDtl dtl ON bal.OwnTxnDtlTID = dtl.TxnDtlTID
-                INNER JOIN rvTxnHdr hdr ON dtl.TxnHdrTID = hdr.TxnHdrTID
-                INNER JOIN rvTxnChkHdr chk ON hdr.TxnChkTID = chk.TxnChkTID
-                INNER JOIN aaMasBatch b ON chk.TxnBatchTID = b.BatchTID
-                INNER JOIN aaTblIntType tpe ON bal.OwnIntCode = tpe.IntTypeCode
-                INNER JOIN fbMasHdr own ON bal.OwnHID = own.HdrHID
-                INNER JOIN fbMasHdr corp ON bal.OwnCorpHID = corp.HdrHID
-                INNER JOIN aaMasAddress addr ON bal.OwnAddrTID = addr.AddrTID
-                INNER JOIN aaMasOwn oattr ON bal.OwnHID = oattr.OwnHID
-                INNER JOIN fbMasHdr prop ON bal.OwnPropHID = prop.HdrHID
-                INNER JOIN fbMasHdr purch ON chk.TxnPurchHID = purch.HdrHID
-                left join ##temp_soldwells AS sw ON sw.HdrHID=PROP.HdrHID 
-                WHERE bal.OwnPmtStatCode NOT IN ('Xfer')
-                AND b.BatchPosted = 1
-                and bal.OwnProdDate between '2017-01-01 00:00:00' and '2017-01-31 00:00:00' 
-                and sw.HdrHID is null
-                AND DTL.TxnReversed =0 
-                AND dtl.TxnReversal=0 
-                ORDER BY bal.OwnProdDate
+                ,OwnNet 
+
+			
+				FROM tempdb..camilo_query
+                WHERE OwnProdDate between '2017-01-01 00:00:00' and '2017-12-31 00:00:00'   
+                
+                ORDER BY OwnProdDate
                 OFFSET {Y} ROWS
                 FETCH NEXT {Z} ROWS ONLY
                                 """
@@ -78,10 +48,10 @@ import numpy as np
 import importlib.util
 
 
-server="enertiagemini"
-db="Enertia_Gemini_M3"
-user="GeminiData_User"
-pws="Gem1n!_us#r"
+server="Enertia01B"
+db="Enertia"
+user="GeminiXtract"
+pws="Dat@_extra3t"
 
 def controller():
     try: 
@@ -132,7 +102,7 @@ def get_splitData(query, corp, iterator,Y,Z):
 
 def create_file(data,corp, viewNm, iterator):
     print('Creating file')
-    writer = pd.ExcelWriter("G:\\Accounting\\SAN JUAN\\PPA Documentation\\Data Extraction_IT3\\{}\\Extract_{}_CorpID_{}_File_{}.xlsx".format(viewNm, viewNm,corp,iterator), engine='xlsxwriter')
+    writer = pd.ExcelWriter("c\\{}\\Extract_{}_CorpID_{}_File_{}.xlsx".format(viewNm, viewNm,corp,iterator), engine='xlsxwriter')
 
     # Convert the dataframe to an XlsxWriter Excel object.
     data.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -144,7 +114,7 @@ def create_file(data,corp, viewNm, iterator):
 
 def create_CSVfile(data,corp, viewNm, iterator):
     print('Creating Flat File ')
-    data.to_csv( "G:\\Accounting\\SAN JUAN\\PPA Documentation\\Data Extraction_IT3\\{}\\Extract_{}_File_{}.txt".format(viewNm,viewNm,iterator)
+    data.to_csv( "G:\\Accounting\\SAN JUAN\\PPA Documentation\\Data Extraction_IT3\\{}\\Extract_{}_File_{}.txt".format(viewNm,viewNm,'{0:04}'.format(iterator))
                 ,sep='|' , index=False   )
     print('File {}  Created...'.format(iterator))
 
@@ -170,12 +140,13 @@ size=400000
 iterator = get_count(ctx, c_query, 'corp', size)  
 print('                                   Iterator number =',iterator, 'For the Corp {}'.format('ALL'))
 for cicle in range(iterator):
-    print(cicle)
-    Y=size*cicle
-    Z=size   #*(cicle+1)
-    print('The range in this cicle is   {}  to      {}  '.format(Y,Z))
-    data = get_splitData(query, 'corp', iterator,Y,Z)
-    create_CSVfile(data,'corp', 'rvBalOwnTxn', cicle)
-    # print(data)
+    if cicle not in range(116):
+        print(cicle)
+        Y=size*cicle
+        Z=size   #*(cicle+1)
+        print('The range in this cicle is   {}  to      {}  '.format(Y,Z))
+        data = get_splitData(query, 'corp', iterator,Y,Z)
+        create_CSVfile(data,'corp', 'rvBalOwnTxn', cicle)
+        # print(data)
+        # break
     # break
-# break
