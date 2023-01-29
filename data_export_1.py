@@ -1,3 +1,10 @@
+"""
+This code is used to pull 200 millions of records from a database to a size delimited flat files.
+The purpose of this code is migrate Enertia ERP system Data to SAP.
+
+"""
+
+
 c_query="""
                 with cte as 
                 (
@@ -133,10 +140,10 @@ import numpy as np
 import importlib.util
 
 
-server="enertiagemini"
-db="Enertia_Gemini_M3"
-user="GeminiData_User"
-pws="Gem1n!_us#r"
+server="server"
+db="database"
+user="database_user"
+pws="user_pass"
 
 def controller():
     try: 

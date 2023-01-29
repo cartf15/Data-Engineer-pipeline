@@ -57,29 +57,7 @@ class ControllerODBC:
     
     def get_SQL(self):
         r = f"""
-                    SELECT rcorp.HdrCode AS BatchCorpCode, rcorp.HdrName AS BatchCorpName, corp.HdrCode AS GLCorpCode, corp.HdrName AS GLCorpName, acct.HdrCode AS AcctCode, acct.HdrName AS AcctName, icorp.HdrCode AS GLICCorpCode,
-                  prop.HdrCode AS PropCode, prop.HdrName AS PropName, purch.HdrCode AS PurchCode, purch.HdrName AS PurchName, glTxn.OrigTxnRowTID, gl.GlDtlTID, gl.DtlCorpHID, gl.DtlAcctHID, gl.DtlBatchTID, gl.DtlBatchNo, gl.DtlProcessTID,
-                  gl.DtlBankTxnTID, gl.DtlChkDepNo, gl.DtlInvoiceNo, gl.DtlTxnType, gl.DtlTxnSrcCode, gl.DtlTxnDate, gl.DtlAcctDate, gl.DtlSvcDate, gl.DtlAfeCatCode, gl.DtlBillCatCode, gl.DtlAtrType, gl.DtlAtrCode, gl.DtlProdCode, gl.DtlProdCmpnt,
-                  gl.DtlProdDsgnCode, gl.DtlUomCode, gl.DtlTaxStateCode, gl.DtlIntTypeCode, gl.DtlSysIntCode, gl.DtlVol, gl.DtlDesc, gl.DtlVal, gl.DtlVendorHID, gl.DtlPayeeHID, gl.DtlPurchaserHID, gl.DtlOwnerHID, gl.DtlRemitterHID, gl.DtlAfeHID,
-                  gl.DtlPropHID, gl.DtlICCorpHID, gl.DtlFisPeriodClosingTID, gl.DtlDdaOwnerHID, gl.DtlDistrib, gl.DtlCurrTransHistSpecRate, gl.DtlEqDtlTID, gl.DtlTxnTypeUserDefCode,
-                  REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(gl.DtlDesc, CHAR(10), ''), CHAR(13), ''), CHAR(10), ''), CHAR(13), ''), CHAR(10), ''), CHAR(13), ''), CHAR(10), ''), CHAR(13), ''), CHAR(10), ''),
-                  CHAR(13), '') AS DtlDesc1
-                    FROM     glMasDtl AS gl INNER JOIN
-                  glMasDtlPostTxn AS glTxn ON gl.GlDtlTID = glTxn.GlDtlTID AND glTxn.OrigTxnTableName = 'rvTxnDtl' INNER JOIN
-                  rvTxnDtl AS dtl ON glTxn.OrigTxnRowTID = dtl.TxnDtlTID INNER JOIN
-                  rvTxnHdr AS hdr ON dtl.TxnHdrTID = hdr.TxnHdrTID INNER JOIN
-                  rvTxnChkHdr AS chk ON hdr.TxnChkTID = chk.TxnChkTID INNER JOIN
-                  aaMasBatch AS b ON chk.TxnBatchTID = b.BatchTID INNER JOIN
-                  fbMasHdr AS rcorp ON b.CorpHID = rcorp.HdrHID LEFT OUTER JOIN
-                  fbMasHdr AS corp ON gl.DtlCorpHID = corp.HdrHID LEFT OUTER JOIN
-                  fbMasHdr AS acct ON gl.DtlAcctHID = acct.HdrHID LEFT OUTER JOIN
-                  fbMasHdr AS icorp ON gl.DtlICCorpHID = icorp.HdrHID LEFT OUTER JOIN
-                  fbMasHdr AS purch ON gl.DtlPurchaserHID = purch.HdrHID INNER JOIN
-                  fbMasHdr AS prop ON dtl.TxnRevPropHID = prop.HdrHID
-                        WHERE  (hdr.TxnProdDate BETWEEN '1/1/2017' AND '1/31/2017') AND (prop.HdrCode NOT LIKE '%SOLD%')
-                        ORDER BY BatchCorpCode
-                        OFFSET 0 ROWS
-                        FETCH NEXT 100000 ROWS ONLY
+                   Query
                 
                 
                 """
@@ -91,10 +69,7 @@ class ControllerODBC:
 
 
     def get_columns(selF):
-        r = f"""select t.name TABLE_NAME, c.name COLUMN_NAME, ty.name DATA_TYPE from sys.tables t 
-                inner join sys.columns c on t.object_id = c.object_id
-                inner join sys.types ty on c.system_type_id = ty.system_type_id
-                ORDER BY 1;"""
+        r = f"""query2"""
         return r
 
     def add_table(self, df, table_name):

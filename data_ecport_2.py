@@ -1,8 +1,17 @@
+"""
+This code is used to pull 200 millions of records from a database to a size delimited flat files.
+The purpose of this code is migrate Enertia ERP system Data to SAP.
+
+"""
+
 c_query="""
-          select  count(*)
-            FROM tempdb..camilo_query_2 
-                WHERE  OwnProdDate between '2017-01-01 00:00:00' and '2017-12-31 00:00:00'  
+          select 
+                COUNT(*)
+                FROM tempdb..camilo_query
+                WHERE OwnProdDate between '2017-01-01 00:00:00' and '2017-12-31 00:00:00'   
                 
+                     
+                                
         """
 
 corp_query="""
@@ -12,20 +21,25 @@ corp_query="""
             """
 
 query="""
-             SELECT 
-            OwnTxnTID
-            , PropCode
-            ,PurchCode
-            ,TxnProdCode
-            ,OwnProdDate
-            ,OwnDedCode
-            , OwnCode
-            ,SysIntCode
-            , OwnIntCode
-            , OwnDeckDcml
-            ,OwnDedComputedAmt
-            FROM tempdb..camilo_query_2 
-                WHERE  OwnProdDate between '2017-01-01 00:00:00' and '2017-12-31 00:00:00'  
+             select
+                 OwnTxnTID
+                , PropCode
+                ,PurchCode
+                ,TxnProdCode
+                ,OwnProdDate
+                ,OwnCode
+                ,SysIntCode
+                , OwnIntCode
+                ,OwnDeckDcml
+                ,OwnChkVol
+                ,OwnMmbtu
+                ,OwnVal
+                ,OwnNet 
+
+			
+				FROM tempdb..camilo_query
+                WHERE OwnProdDate between '2017-01-01 00:00:00' and '2017-12-31 00:00:00'   
+                
                 ORDER BY OwnProdDate
                 OFFSET {Y} ROWS
                 FETCH NEXT {Z} ROWS ONLY
@@ -40,10 +54,10 @@ import numpy as np
 import importlib.util
 
 
-server="Enertia01B"
-db="Enertia"
-user="GeminiXtract"
-pws="Dat@_extra3t"
+server="server"
+db="database"
+user="database_user"
+pws="user_pass"
 
 def controller():
     try: 
@@ -52,7 +66,7 @@ def controller():
         print('Successful connection')
     except: 
 
-        print ('Connection Failed' )
+        print ('Connection Fails' )
 
     cs = ctx.cursor()
     print('cursor ok')
@@ -67,17 +81,18 @@ def get_corporates(ctx, corp_query):
     return corp_list 
 
 
-def get_count(ctx, c_query,corp,size):
+def get_count(ctx, c_query,corp, size):
 
     print('\n')
     print('starting count query')
     c_data=pd.read_sql(c_query, ctx)
     print('C_query output = ')
     iterator=math.ceil(int(c_data.iloc[0,0])/size)
-    print('Iterator = {}'.format(c_data.iloc[0,0]))
+    print('Iterator = {}'.format(iterator))
     
   
     return iterator
+
 
 
 
@@ -93,7 +108,7 @@ def get_splitData(query, corp, iterator,Y,Z):
 
 def create_file(data,corp, viewNm, iterator):
     print('Creating file')
-    writer = pd.ExcelWriter("G:\\Accounting\\SAN JUAN\\PPA Documentation\\Data Extraction_IT3\\{}\\Extract_{}_CorpID_{}_File_{}.xlsx".format(viewNm, viewNm,corp,iterator), engine='xlsxwriter')
+    writer = pd.ExcelWriter("c\\{}\\Extract_{}_CorpID_{}_File_{}.xlsx".format(viewNm, viewNm,corp,iterator), engine='xlsxwriter')
 
     # Convert the dataframe to an XlsxWriter Excel object.
     data.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -129,16 +144,15 @@ size=400000
  
 # corp_id=corp_list[0]
 iterator = get_count(ctx, c_query, 'corp', size)  
-# Z=2800000
 print('                                   Iterator number =',iterator, 'For the Corp {}'.format('ALL'))
 for cicle in range(iterator):
-    if cicle not in range(122): 
+    if cicle not in range(116):
         print(cicle)
         Y=size*cicle
         Z=size   #*(cicle+1)
         print('The range in this cicle is   {}  to      {}  '.format(Y,Z))
         data = get_splitData(query, 'corp', iterator,Y,Z)
-        create_CSVfile(data,'corp', 'rvBalOwnTxnDed', cicle)
+        create_CSVfile(data,'corp', 'rvBalOwnTxn', cicle)
         # print(data)
         # break
     # break
